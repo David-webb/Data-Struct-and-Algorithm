@@ -108,7 +108,7 @@ def shellSort(numlist, mode=1):
     pass
 
 
-def mergeSort(numlist,mode=1):
+def mergeSort(numlist, mode=1):
     """归并排序
         自上而下的递归式归并排序        
     """
@@ -163,6 +163,7 @@ def quickSort_2(numlist, left, right):
             numlist: 待排序的数组
             left: 数组下界（不管是递归内层或外层，边界的索引一律使用原始的numlist的索引）
             right: 数组上界（边界索引备注同上）
+        思路：参考https://mp.weixin.qq.com/s/8ZTMhvHJK_He48PpSt_AmQ
     """
     # 分区操作
     def partition(nums,left, right):

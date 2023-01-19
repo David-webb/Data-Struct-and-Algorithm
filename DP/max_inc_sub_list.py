@@ -64,6 +64,32 @@ def max_inc_sub_list(L):
         ans_l.append(len(tmp))
     return max(ans_l)
     
+def longestIncSubseq(nums):
+    """给定一个长度为N的整数数组，求其中最长的递增子序列的长度
+    注意：这里的的递增子序列不需要是连续的
+    思路：判断是否是动态规划问题：
+        穷举：可以。以每个元素为起点遍历整个数组。
+        重叠子问题：定义dp[i] = n, 表示以nums[i]为起点的最大递增序列长度为n.
+            dp[i] = max(dp[j]) + 1 if num[j] >= num[i] else 0, 其中j in [i+1, n] 
+        子问题相互独立：满足
+        边界：dp[n] = 1
+    params:
+        nums是整数数组
+    """
+
+    l = len(nums)
+    dp = [0] * l 
+    dp[-1] = 1
+    for i in range(l)[-2::-1]:
+        prop_j = [dp[j] for j in range(i+1, l) if nums[j]>=nums[i]]
+        if prop_j:
+            dp[i] = max(prop_j) + 1 
+        else:
+            dp[i] = 0
+    print(dp, max(dp))
+    return max(dp) 
+    pass
+
 
 if __name__ == "__main__":
     L = [1,2,5,6,7,8,3]
