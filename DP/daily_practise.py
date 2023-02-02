@@ -1,62 +1,62 @@
 """
  * Author        : TengWei
  * Email         : davidwei.teng@foxmail.com
- * Created time  : 2022-05-05 11:05
- * Filename      : string_cut.py
- * Description   : 
+ * Created time  : 2023-01-31 09:34
+ * Filename      : daily_practise.py
+ * Description   : 动态规划的日常练习
 """
+# -*- coding:utf-8 -*-
 
-def string_cut(n):
-    """钢筋切割：根据不同长度钢筋的价格，计算长度为n的钢筋的最优切法
-    状态转移方程：
-        opt(n) = max(cost(i) + opt(n-i))
-    注意考虑当n大于cost的最大key的情况
-    时间复杂度：O(N^2)
-    Args:
-        n: 钢筋的长度
+def linecut(n):
+    """钢条切割：给定各个长度钢条的售价和一根指定长度的钢条，求最大收益的切割方案
+    Args: 
+        n: 指定的钢条长度
+    Returns:
+        钢条的最大收益和切割方案
+    分析：
+        状态转移方程 dp(n) = max(dp(n-ni)+pi) n>=ni
+        dp(0) = 0, dp(1) = 1
+        优化：如果n特别大，那么怎么优化数据结构，减少内存使用?
+    说明：
+        该函数是自顶向下实现的, 自底向上会更好一些
     """
-
-    cost = {
-            1:1,
-            2:5,
-            3:8,
-            4:9,
-            5:10,
-            6:17,
-            7:17,
-            8:20,
-            9:24,
-            10:30
+    sell_table = {
+        1:1, 
+        2:5,
+        3:8,
+        4:9,
+        5:10,
+        6:17,
+        7:17,
+        8:20,
+        9:24,
+        10:30
     }
-    max_t = max(cost.keys())
-    # 如果n超出价格表最大数值
-    ask_n = n
-    if n > max_t:
-        n = max_t
+    keys = list(sell_table.keys())
+    dp_ops = [[], [1]]
+    dp = [-1]*(n+1)
+    dp[0] = 0
+    dp[1] = 1
 
-    opt = {
-        1:1,
-    }
-    if n < 1:
-        return -1
-    elif n == 1:
-        return 1
-    else:
-        for i in range(2, n+1):
-            sum_c = cost[i]
-            for j in range(1, i):
-                sum_c = max(sum_c, cost[j]+opt[i-j])
-            opt[i] = sum_c 
+    def full_dp(m, dp, ):
+        assert m >= 0, "param n must be natural number!"
+        # if m = 0:
+            # return dp[0]
+        if dp[m] != -1:
+            return dp[m]
+        u_keys = [k for k in keys if k<=m]
+        # print(u_keys,m)
+        for k in u_keys:
+            if k< m:
+                dp[k] = full_dp(k, dp)
 
-    if ask_n > max_t:
-        t = int(ask_n / max_t)
-        remder = ask_n % max_t
-        print(t, remder)
-        ans = (t * cost[max_t] + opt[remder]) if remder else t*cost[max_t]  # 这里有一个前提：cost中尺寸越大，价格越高
-    else:
-        ans = opt[ask_n]
-    return opt, ans 
+        dp[m] = max([(dp[m-k]+sell_table[k]) for k in u_keys])
+        # print(dp)
+        return dp[m]
+        pass
 
+    full_dp(n, dp)
+    return dp[n]
     pass
 
 
@@ -91,7 +91,6 @@ def cutline(n):
 
 def cutline_upgrade(n):
     """对cutline的空间优化版本
-    分析：自底向上计算时，只需要记得[n-max(cost), n-min(cost)]窗口范围的数据，之前的可以丢弃，所以直接设置滑动窗口即可
     """
     cost = {
         1:1, 2:5, 3:8, 4:9, 5:10, 6:17, 7:17, 8:20, 9:24, 10:30
@@ -131,6 +130,41 @@ def cutline_upgrade(n):
     # print(cut_plan)
 
     pass
-if __name__ == "__main__":
-    print(string_cut(188))
+
+
+def max_inc_sub_list(nums):
+    """最长递增子序列的长度
+    分析：
+        定义以nums[i]结尾的最长子序列长度为dp[i]
+        状态转移方程：
+        dp[i] = max(dp[j]+1)  0=<j < i 且 nums[j] <= nums[i] (如果要求严格递增，则设置nums[j]<nums[i])
+    """
+    assert nums, "检测到空数组"
+    n = len(nums)
+    dp = [0] * n
+    dp[0] = 1
+    sub_list_buff = [""] * n
+    sub_list_buff[0] = [nums[0]]
+    for i in range(1, n):
+        idx = [j for j in range(i) if nums[j] < nums[i]]
+        if idx:
+            tmp = [dp[j] for j in idx]
+            dp[i] = max(tmp) + 1
+            sub_list_buff[i] = sub_list_buff[idx[tmp.index(dp[i]-1)]] + [nums[i]]
+        else:
+            dp[i] = 1
+            sub_list_buff[i] = [nums[i]]
+        pass
+    return max(dp), sub_list_buff[dp.index(max(dp))]
     pass
+
+if __name__ == "__main__":
+    # print(linecut(11))
+    # print(cutline(11))
+    # cutline_upgrade(115)
+
+    nums = [10,9,2,5,3,7,101,18]
+    print(max_inc_sub_list(nums))
+    pass
+
+
