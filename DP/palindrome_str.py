@@ -76,21 +76,22 @@ def the_longest_palindrome_substring(str_m):
     start = 0
     for i in range(length):
         dp[i,i] = 1
-    for k in range(2, length+1):
-        for i in range(length-k+1):
-            j = i+k-1
+
+    for k in range(2, length+1):  # 子串长度设置, 范围[2, n]
+        for i in range(length-k+1):# 子串起始索引的设置
+            j = i + k - 1           # 子串的终止位置设置
             if str_m[i] == str_m[j]:
                 if k == 2:
                     dp[i,j] = 1
                 else:
-                    dp[i,j] = dp[i+1, j-1]
+                    dp[i,j] = dp[i+1, j-1] # 这里不需要递归计算，因为k的长度遍历设置是从小到大的
+
             if dp[i,j] and k > max_len:
                 max_len = k
                 start = i 
 
     return str_m[start:start+max_len]
     # return dp
-
     pass
 
 def the_longest_palindrome_subsequence(str_m):
@@ -108,12 +109,13 @@ def the_longest_palindrome_subsequence(str_m):
     length = len(str_m)
     dp = np.zeros((length, length,))
     # tmp_str = np.zeros((length, length,), dtype=str)
-    tmp_str = [""] * (length * length)
+    tmp_str = [""] * (length * length) # 用于保存最长子串的buff
     # max_len = 1
     # start = 0
     for i in range(length):
         dp[i,i] = 1
         tmp_str[i*length+i] = str_m[i]
+
     for k in range(2, length+1):
         for i in range(length-k+1):
             j = i+k-1
@@ -141,7 +143,7 @@ def the_longest_palindrome_subsequence(str_m):
 
 if __name__ == "__main__":
     # print(palindrome("abc,bad")) # abc,bad ===> dabc,cbad
-    print(the_longest_palindrome_substring("ABCDDCEFA"))
-    # print(the_longest_palindrome_subsequence("ABCDBDCEFA"))
+    # print(the_longest_palindrome_substring("ABCDDCEFA"))
+    print(the_longest_palindrome_subsequence("ABCDBDCEFA"))
 
     pass

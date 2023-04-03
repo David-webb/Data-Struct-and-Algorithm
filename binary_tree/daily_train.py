@@ -374,8 +374,67 @@ def flipBT(root):
     flipBT(root.right_node)
 
 
+def left2right_TS(root):
+    if root is None:
+        return None
+    assert root.right_node is None, "found some node has right child, sth went wrong with right2left_TS! and the node val is " + str(root.val) 
+    root.right_node = root.left_node
+    root.left_node = None
+    left2right_TS(root.right_node)
+    return root
+    pass
+
+def treeSqueeze(tree_handler):
+    """二叉树转链表
+    思路：
+        先序遍历
+        将每个节点的右孩子链接到左孩子的先序末端位置（此时所有节点都没有右孩子）
+        将所有节点的左孩子都挪到右孩子的位置
+    """
+    t, root = tree_handler, tree_handler.root
+    right2left_TS(root)
+    printTree(t, 'full')
+    left2right_TS(root) 
+    # return root
+    printTree(t, 'right_slide')
+    pass
+
+
+def right2left_TS(root):
+    if root is None:
+        return None
+    if root.left_node:
+        left_tail = right2left_TS(root.left_node)
+        # tail.left_node = root.right_node
+        # root.right_node = None
+    else:
+        # root.left_node = root.right_node
+        # root.right_node = None
+        left_tail = root
+
+    if root.right_node:
+        right_tail = right2left_TS(root.right_node)
+    else:
+        right_tail = None
+
+    left_tail.left_node = root.right_node
+    root.right_node = None
+
+    # if left_tail.left_node:
+        # return left_tail.left_node
+    # else:
+        # return left_tail 
+
+    if right_tail:
+        return right_tail
+    else: # right_tail 为None只有当right_node为None的时候才会出现
+        return left_tail
+    pass
+
+
 def BT2line(root):
-    """按照先序遍历顺序将二叉树转成右侧单链表（要求使用inplace操作）
+    """二叉树转链表：
+    按照先序遍历顺序将二叉树转成右侧单链表（要求使用inplace操作）
     思路：因为是先序遍历，所以右孩子在左孩子之后，所以操作步骤如下：
         1. 将所有节点的右孩子转到左孩子的末尾, 保证先序顺序（此时右孩子都为空）
         2. 将所有的左孩子转移到右孩子位置
@@ -416,7 +475,7 @@ def reshape(root):
     root.left_node = None 
     reshape(root.right_node)
    
-def printTree(root):
+def printTree(tree_h, mode='full'):
     # buf = [root]
     # ans = []
     # while buf:
@@ -433,10 +492,19 @@ def printTree(root):
         # # if rt.right_node: #  is None or rt.right_node.val is None:
             # # buf.append(rt.right_node)
     # print(ans)
-    if root:
-        print(root.val)
-        printTree(root.right_node)
-    pass
+    if isinstance(tree_h, tree):
+        root = tree_h.root
+    else:
+        root = tree_h
+
+    if mode == "right_slide":
+        if root:
+            print(root.val)
+            printTree(root.right_node,  mode=mode)
+    elif mode == "full":
+        ans = tree_h.preOrderSearch(root)
+        print(ans)
+        pass
 
 
 def one_zero_bag():
@@ -445,6 +513,9 @@ def one_zero_bag():
     """
     pass
 
+def merge_sort_0403(nums):
+
+    pass
 
 if __name__ == "__main__":
     # ========= 测试 go_linkedsqueezing函数 ============
@@ -478,10 +549,13 @@ if __name__ == "__main__":
     # cutline(10)
     # ============= 测试：BT2line ====================
     # 测试列表：[1,2,5,3,4,None,6]
-    t = build_tree(False)
-    # printTree(t.root)
-    BT2line(t.root)
+    # t = build_tree(False)
+    # BT2line(t.root)
+    # 另一次训练尝试
+    # t = build_tree(False)
+    # treeSqueeze(t)
     # ============= 测试：
+    pass
 
 
 

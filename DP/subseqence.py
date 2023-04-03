@@ -31,7 +31,6 @@ def maxSubArray(nums):
     if n == 1:
         return dp[0]
     for i in range(1, len(nums)):
-
         # dp[i] = max(dp[i-1]+nums[i], nums[i])
         # =============> 改为：
         if dp[i-1]+nums[i] >= nums[i]:
@@ -47,9 +46,8 @@ def maxSubArray(nums):
 def max_sub_list(L):
     """求L的最大递增子序列长度
     动态规划：
-    dp[i] = 1   i = 1
-    dp[i] = max(dp[j]) + 1        0 =< j <= i-1
-
+        dp[i] = 1   i = 1
+        dp[i] = max(dp[j]) + 1        0 <= j <= i-1
     """
     lenth = len(L)
     if(lenth == 1):
@@ -80,6 +78,7 @@ def max_inc_sub_list(L):
         ans_l.append(len(tmp))
     return max(ans_l)
     
+
 def longestIncSubseq(nums):
     """给定一个长度为N的整数数组，求其中最长的递增子序列的长度
     注意：这里的的递增子序列不需要是连续的
@@ -92,7 +91,6 @@ def longestIncSubseq(nums):
     params:
         nums是整数数组
     """
-
     l = len(nums)
     dp = [0] * l 
     dp[-1] = 1
@@ -141,13 +139,27 @@ def envelops(papers):
     Args:
         papers：二维数组， e.g.[[5,4], [6,4], [6,7], [2,3]], 每个元素代表一个信封的宽高数据
     Returns:
-        能够套信封做多的一组的个数
+        能够套信封最多的一组的个数
     规则：
         两个信封的宽或者高相等都不能进行嵌套，必须一方的宽高都大于另一方才可
     思路：
         先对papers按照w进行升序排序，对于w相等的，对h按照降序排序，这样得到一个新的h序列，对该序列求解最大子序列即可
     """
-     
+
+    def custom_sort(x):
+        return (x[0],-x[1])
+        pass
+
+    def sort_env(nums):
+        # print(nums)
+        ans = nums.sort(key=custom_sort)
+        # print("ans is:", ans) # None, this 'sort' func is a inplace op.
+        # print("inplace data is:", nums)
+        pass
+    sort_env(papers)
+    hl = [p[1] for p in papers]
+    ans, ans_buff = max_inc_sub_list(hl)
+    print(ans, ans_buff)
     pass
 
 
@@ -158,18 +170,14 @@ def LCS_s(s1, i, s2, j, memo):
     """计算最长公共子序列，返回长度和序列的索引(分别在两个字符串中)
     """
     n, m = len(s1[i:]), len(s2[j:])
-
     if not n or not m: # 如果存在空串，那么LCS_s长度为0
         return 0
-    
     if memo[i,j] != -1:
         return memo[i,j]
-
     if s1[i] == s2[j]:
         memo[i,j] = LCS_s(s1, i+1, s2, j+1, memo) + 1
     else:
         memo[i,j] = max(LCS_s(s1, i+1, s2, j, memo), LCS_s(s1, i , s2, j+1, memo))
-    
     return memo[i, j]
     pass
 
@@ -248,22 +256,52 @@ def longestCommonSubseq_down2top(s1, s2):
         else:
             dp[i][j] = max(dp[i-1][j], dp[i][j-1]) + 1
         注意因为用到了i-1和j-1,所以设置memo的时候需要多一位，也就是存在索引偏移
+        边界：memo[0,:] = memo[:, 0] = 0
     优化：
         实际上每次求解dp[i][j]只和dp[i-1][j-1]、dp[i-1][j]和dp[i][j-1]相关, 所以空间上可以优化
     """
     n, m = len(s1), len(s2)
     memo = np.zeros((n+1, m+1)) 
-    for i in range(n+1): # 索引0是占位buff
-        for j in range(m+1):
-            if s1[i] == s2[j]:
+    for i in range(1, n+1): # 索引0是占位buff
+        for j in range(1, m+1):
+            if s1[i-1] == s2[j-1]:
                 memo[i][j] = memo[i-1][j-1] + 1
             else:
-                memo[i][j] = max(mem[i-1][j], memo[i][j-1])
+                memo[i][j] = max(memo[i-1][j], memo[i][j-1])
 
     return memo[n][m] 
-
     pass
 
+def longestCommonSubseq_down2top_buff(s1, s2):
+    """LCS自底向上版本，缓存子序列的索引
+    """
+    n, m = len(s1), len(s2)
+    memo = np.zeros((n+1, m+1)) 
+    idx_buff = {(0,0): []} # 记录LCS字符的索引，目前只记录s1的
+    for i in range(n):
+        idx_buff[(i,0)] = []
+    for j in range(n):
+        idx_buff[(0, j)] = []
+
+    for i in range(1, n+1): # 索引0是占位buff
+        for j in range(1, m+1):
+            if (i,j) not in idx_buff.keys():
+                idx_buff[(i,j)] = []
+            if s1[i-1] == s2[j-1]:
+                memo[i][j] = memo[i-1][j-1] + 1
+                idx_buff[(i,j)] = idx_buff[i-1, j-1] + [i-1] # 这里一定要集成先前的子序列索引结果
+            else:
+                # memo[i][j] = max(memo[i-1][j], memo[i][j-1])
+                if memo[i-1][j] > memo[i][j-1]:
+                    memo[i,j] = memo[i-1, j]
+                    idx_buff[(i, j)] += idx_buff[(i-1, j)]
+                else:
+                    memo[i,j] = memo[i, j-1]
+                    idx_buff[(i, j)] += idx_buff[(i, j-1)]
+    print(memo[n,m])
+    print("s1 idx is:", idx_buff[(n, m)], "as in char is:", "".join([s1[i] for i in idx_buff[(n,m)]]))
+    return idx_buff
+    pass
 
 # ===================== LCS 的两个拓展应用 =======================
 def minDistance(s1, s2):
@@ -313,7 +351,6 @@ def editDistance(s1, s2):
         base case:
             如果i = -1, 即s1字符已经遍历完毕, 在s1的开头添加j+1个字符
             如果j = -1, 即s2字符已经遍历完毕, 将s1开头的i+1个字符全部删除
-
     """
     n, m = len(s1), len(s2)
     memo = np.zeros((n, m))
@@ -400,13 +437,17 @@ def editDistance_d2t_v2(s1, s2):
 
 if __name__ == "__main__":
     # 测试最大子数组和 
-    nums = [-3,1,3,-1,2,-4,2]
-    print(maxSubArray(nums))
+    # nums = [-3,1,3,-1,2,-4,2]
+    # print(maxSubArray(nums))
 
     # 测试最大递增子序列
-    L = [1,2,5,6,7,8,3]
-    print(max_sub_list(L))
-    print(max_inc_sub_list(L))
+    # L = [1,2,5,6,7,8,3]
+    # print(max_sub_list(L))
+    # print(max_inc_sub_list(L))
+
+    # 测试信封问题
+    # envs = [[5,4], [6,4], [6,7], [2,3]]
+    # envelops(envs)
 
     # 测试LCS
     # s1 = "zabcde"
@@ -414,17 +455,24 @@ if __name__ == "__main__":
     # print(longestCommonSubseq(s1, s2))
     # print(longestCommonSubseq_s(s1, s2))
 
+    # 测试LCS自底向上版本
+    s1 = "zabcde"
+    s2 = "acez"
+    # memo = longestCommonSubseq_down2top(s1, s2)
+    # print(memo)
+    longestCommonSubseq_down2top_buff(s1, s2)
+
     # 测试LCS的应用
     # s1 = "sea"
     # s2 = "eat"
     # print(minimumDeleteSum(s1, s2))
 
     # 测试编辑距离
-    s1 = "horse"
-    s2 = "ros"
-    print(editDistance(s1, s2))
-    print(editDistance_down2top(s1, s2))
-    print(editDistance_d2t_v2(s1, s2))
+    # s1 = "horse"
+    # s2 = "ros"
+    # print(editDistance(s1, s2))
+    # print(editDistance_down2top(s1, s2))
+    # print(editDistance_d2t_v2(s1, s2))
     
 
     pass

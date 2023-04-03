@@ -292,7 +292,6 @@ def kill_none_node(root):
                 rt.right_child=None
             else:
                 buffer.append(rt.right_child)
-
     return root
 
     pass
@@ -410,6 +409,12 @@ def build_tree_with_pre_and_post_order(preOrder, postOrder):
     预设前提：
         i. 树中没有重复的元素
         ii.如果结果不唯一，返回其中任意一个
+    示例:
+        输入：
+            pre = [1,2,4,5,3,6,7]
+            post = [4,5,2,6,7,3,1]
+        输出：
+            [1,2,3,4,5,6,7]
     """
     if not preOrder or not postOrder:
         return None
@@ -418,10 +423,11 @@ def build_tree_with_pre_and_post_order(preOrder, postOrder):
     rt = node(v)
     idx = postOrder.index(v)
     child_nodes = postOrder[:idx]
-    bro_nodes = postOrder[idx+1:] if idx+1 < len(inOrder)-1 else []
+    bro_nodes = postOrder[idx+1:] if idx+1 <= len(inOrder)-1 else []
 
     child_pre = [n for n in preOrder if n in child_nodes]
     bro_pre = [n for n in preOrder if n in bro_nodes]
+
     # 构建子树
     if len(child_nodes)<=2:
         c = 0
@@ -437,11 +443,20 @@ def build_tree_with_pre_and_post_order(preOrder, postOrder):
         rt.right_child = rchild
 
     # 构建兄弟结构
-    if bro_nodes:
-        bro_node = build_tree_with_pre_and_post_order(bro_pre, child_nodes)
+    if bro_nodes: # 说明此时的rt不是二叉树的根 
+        # bro_node = build_tree_with_pre_and_post_order(bro_pre, bro_nodes)
+        for i, bn in enumerate(bro_pre):
+            if i == 0:
+                bro_node = node(bn)
+                his_node = bro_node
+            else:
+                tmp_node = node(bn)
+                his_node.left_child = tmp_node
+                his_node = tmp_node
     else:
         bro_node = None
 
+    # 递归的最上层bro_node输出应当是None
     return rt, bro_node
 
 
@@ -489,7 +504,7 @@ def tree_deserialize(data):
                 t_node = node(l_v)
                 buffer.append(t_node)
                 rt.left_child = t_node
-
+            # else: # node的左右孩子默认是None，所以这里省略了
         if data:
             r_v = data.pop(0)
             if r_v != "#":
@@ -557,7 +572,7 @@ def MergeSort(nums, count):
             j += 1
         else:
             ans.append(left_n[i])
-            count[left_n[i].idx] += j
+            count[left_n[i].idx] += j # 左侧元素合并入列时计算右侧小于当前元素的个数
             i += 1
     # print(" ".join([str(t) for t in count]))
 
@@ -565,6 +580,7 @@ def MergeSort(nums, count):
         ans = ans + left_n[i:]
         for t in left_n[i:]:
             count[t.idx] += j # 此时的j应该是len(right_n), 所以不需要用j+1
+
     if j < rg: # left_n已经归并完毕，但右侧没有，此时不要统计右侧内部的元素计数（右侧模块形成前已经统计过了）
         ans = ans + right_n[j:]
     
@@ -607,6 +623,9 @@ def MergeSort_app2(nums):
 
     end = 0
     global flip_pair_count
+    # 条件1：left_n中元素的索引都是小于right_n的
+    # 条件2：left_n和right_n中的元素都是有序的，所以下面的while循环中可以添加提前终止判断的
+    # 条件2的补充：其实可以将判断过程放在左右序列合并的过程中，这样可以起到和提前终止一样的效果
     for l in range(lf):
         while(end < rg and left_n[l] > right_n[end] * 2): # 这里有可能数值比较大，乘以2后可能会溢出，最好强制转换成long
             end += 1 
@@ -637,8 +656,8 @@ def MergeSort_app2(nums):
     pass
 
 # ==================== 归并排序的应用2：区间和的个数
-"""给定一个整数数组nums以及两个证书lower和upper. 求数组中，值位于范围[lower, upper]（闭区间）之内的区间和的个数。
-区间和S(i,j)表示在nums中，位置从i到j的元素只和，包含i和j(i <= j).
+"""给定一个整数数组nums以及两个整数lower和upper. 求数组中，值位于范围[lower, upper]（闭区间）之内的区间和的个数。
+区间和S(i,j)表示在nums中，位置从i到j的元素之和，包含i和j(i <= j).
 """
 lower = upper = None 
 count = 0
@@ -646,15 +665,15 @@ def countrangesum(nums, low, upr):
     global lower, upper, count
     lower = low
     upper = upr
-    pre_sum = [0] * (len(nums)+1)
+    pre_sum = [0] * (len(nums)+1) # pre_sum[i]表示S[0, i]
     for i in range(len(nums)): # 这里pre_sum多了一个元素，只是为了方便通式的实现，并不影响最终结果（初始值为0）
-        pre_sum[i+1] = pre_sum[i] + nums[i]
+        pre_sum[i+1] = pre_sum[i] + nums[i] 
     mergesort_app3(pre_sum)
     print(count)
     pass
 
 def mergesort_app3(nums):
-    """这里有几点思考注意点：归并排序对前缀和序列的右半部分的排序的操作确实会改变右侧的连续性，但本题是直接和左侧元素相减的，不用考虑右侧的连续性
+    """这里有几点思考注意点：归并排序对前缀和序列的右半部分的排序的操作确实会改变右侧元素之间的相对顺序，但本题是直接和左侧元素相减的，不用考虑右侧元素的相对位置
     """
     hi = len(nums)
     # print("in MergeSort:", hi)
@@ -671,9 +690,8 @@ def mergesort_app3(nums):
     # print("start:",count)
     start = end = 0 
     for l in range(lf):
-        while(start<rg and (right_n[start] - left_n[l]) < lower):
+        while(start<rg and (right_n[start] - left_n[l]) < lower): 
             start += 1
-
         while(end<rg and (right_n[end] - left_n[l]) <= upper):
             end += 1
         count += (end - start)
@@ -706,7 +724,7 @@ def kthsmallest(root, k, c=0):
     """二叉搜索树中的第K小的元素
     思路：中序遍历即可
     """
-    if root == None:
+    if root == None: # 注意点，出口
         return c 
     c = mid_traverse(root.left_child, c, k)
     c += 1
@@ -729,11 +747,11 @@ def convertBST(root):
     """(没做出来)将BST转化为累加树(每个节点值更新为原来BST中数值大于等于该节点的数值之和)
     """
     if root is None:
-        return
-    rg = convertBST(root.right_child)
-    tsum += root.val
+        return 
+    convertBST(root.right_child)
+    tsum += root.val # 在这里累加
     root.val = tsum
-    lf = convertBST(root.left_child)
+    convertBST(root.left_child)
     pass
       
 
@@ -750,7 +768,7 @@ def isValidBST(root, min_v, max_v):
         return False
     if max_v != None and root.val >= max_v:
         return False
-    return isValidBST(root.left, min_v, root) and isValidBST(root.right,root, max_v)
+    return isValidBST(root.left, min_v, root) and isValidBST(root.right, root, max_v)
     pass
 
 pre_num = float('-inf')
@@ -777,13 +795,15 @@ def searchBST(node, target):
         return None
     elif target < node.val:
         return searchBST(node.left, target)
-    else:
+    elif target > node.val:
         return searchBST(node.right, target)
-    return node
+    else:
+        return node
     pass
 
 def insert_into_BST(root, val):
     """（没做出来）在BST中插入一个数
+        注意，要判断相等的情况，相等就不插入 
     """
     if root is None:
         return node(val)
@@ -920,11 +940,12 @@ def count_fullbinarytree_nodes(root):
 
 # ======================== 最邻近公共祖先（LCA: Lowest Common Ancestor） =========================
 def lowestCommonAncestor(root, p, q):
-    """给一棵元素各不相同的二叉树，求解其中数值为p和q的两个节点的最近公共祖先节点
+    """ 给一棵元素各不相同的二叉树，求解其中数值为p和q的两个节点的最近公共祖先节点
     思路：
-    情况1：如果一个节点的左右子树分别包含这两个元素，那么该节点就是p和q的LCA
-    情况2：LCA就是p或q, 另一个节点是LCA的子孙节点
+        情况1：如果一个节点的左右子树分别包含这两个元素，那么该节点就是p和q的LCA
+        情况2：LCA就是p或q, 另一个节点是LCA的子孙节点
     """
+
     if root is None:
         return None
 
